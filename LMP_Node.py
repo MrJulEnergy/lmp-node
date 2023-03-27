@@ -5,12 +5,12 @@ class lammpsnode(Node):
     """Can run LAMMPS Simulations.
 
     Args:
-        lmp_exe: This is the Name or Path of the Lammps executable. Either path,
-            "lmp" or "lamp_<machine>". See https://docs.lammps.org/Run_basics.html
-            for more information
-        lmp_params: To be able to change Parameters with DVC and not have to change
+        lmp_exe: This is the name or path of the LAMMPS executable. Either path
+            to executable, "lmp" or "lamp_<machine>". 
+            See https://docs.lammps.org/Run_basics.html for more information
+        lmp_params: To be able to change parameters with DVC and not have to change
             them manually in the input script, a params file in yaml format and
-            corresponding template file must be provided
+            corresponding template file must be provided.
         lmp_template: In combination with the params file this will be the input
             script for the lammps simulation
 
