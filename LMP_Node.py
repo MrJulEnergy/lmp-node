@@ -37,8 +37,7 @@ class lammpsnode(Node):
         template = env.get_template(self.lmp_template) 
 
         #Render Template
-        self.input_script = template.render(params)
-        print(self.input_script)
+        self.lmp_input_script = template.render(params)
 
     def run(self):
         """
@@ -48,7 +47,7 @@ class lammpsnode(Node):
                 stderr=subprocess.PIPE,
                 )
 
-        stdout, stderr = process.communicate()
+        stdout, stderr = proc.communicate()
         print(stdout)
         #print(stdout.decode("utf-8"))
         """

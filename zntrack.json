@@ -1,6 +1,0 @@
-{
-    "lammpsnode": {
-        "lmp_params": "npt_params.yaml",
-        "lmp_template": "templates/npt.lmp"
-    }
-}
