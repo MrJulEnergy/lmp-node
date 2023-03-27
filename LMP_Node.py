@@ -38,20 +38,18 @@ class lammpsnode(Node):
 
         #Render Template
         self.lmp_input_script = template.render(params)
+        with open("temp.file", "w") as file:
+            file.write(self.lmp_input_script)
 
     def run(self):
-        """
         proc = subprocess.Popen(
-                [self.lmp_exe, "-in", self.lmp_input_script], 
+                [self.lmp_exe, "-in", "temp.file"], 
                 stdout=subprocess.PIPE, 
                 stderr=subprocess.PIPE,
                 )
-
         stdout, stderr = proc.communicate()
         print(stdout)
         #print(stdout.decode("utf-8"))
-        """
-        pass
 
 
 if __name__ == "__main__":
