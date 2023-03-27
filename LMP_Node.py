@@ -27,11 +27,18 @@ class lammpsnode(Node):
 
 
     def _post_init_(self):
-        params = yaml.safe_load(self.lmp_params)
+        #Get parameter from yaml:
+        with open(self.lmp_params, "r") as stream:
+            params = yaml.safe_load(stream)
+
+        #Get template
         loader = FileSystemLoader(".")
         env = Environment(loader=loader, trim_blocks=True, lstrip_blocks=True)
         template = env.get_template(self.lmp_template) 
+
+        #Render Template
         self.input_script = template.render(params)
+        print(self.input_script)
 
     def run(self):
         """
@@ -49,5 +56,5 @@ class lammpsnode(Node):
 
 
 if __name__ == "__main__":
-    lmp = lammpsnode(lmp_params="lammps.yaml", lmp_template="templates/npt.lmp")
+    lmp = lammpsnode(lmp_params="npt_params.yaml", lmp_template="templates/npt.lmp")
     lmp.write_graph()

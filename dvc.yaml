@@ -7,4 +7,4 @@ stages:
             lmp_exe: lmp_serial
             lmp_shell: lmp_serial
         params:
-        -   lammps.yaml: null
+        -   npt_params.yaml: null
