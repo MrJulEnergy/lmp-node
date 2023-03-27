@@ -2,7 +2,9 @@ stages:
     lammpsnode:
         cmd: zntrack run LMP_Node.lammpsnode --name=lammpsnode
         deps:
-        - NPT.in
+        - templates/npt.lmp
         meta:
             lmp_exe: lmp_serial
             lmp_shell: lmp_serial
+        params:
+        -   lammps.yaml: null
