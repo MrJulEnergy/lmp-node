@@ -4,4 +4,5 @@ stages:
         deps:
         - NPT.in
         meta:
+            lmp_exe: lmp_serial
             lmp_shell: lmp_serial
