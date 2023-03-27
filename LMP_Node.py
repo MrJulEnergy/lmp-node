@@ -1,14 +1,30 @@
-from zntrack import Node, zn, dvc, meta
-import subprocess
+from zntrack import Node, dvc, meta
+
 
 class lammpsnode(Node):
-    lmp_exe = meta.Text("lmp_serial") #see: https://docs.lammps.org/Run_basics.html . either "lmp" or "lmp_<machine>"
-    lmp_params = dvc.params("lammps.yaml") #parameters which can be changes by dvc in the template file
-    lmp_input_file = dvc.deps("NPT.in") #input template for LAMMPS
-    
-    def run(self):
+    """Can run LAMMPS Simulations.
+
+    Args:
+        lmp_exe: This is the Name or Path of the Lammps executable. Either path,
+            "lmp" or "lamp_<machine>". See https://docs.lammps.org/Run_basics.html
+            for more information
+        lmp_params: To be able to change Parameters with DVC and not have to change
+            them manually in the input script, a params file in yaml format and
+            corresponding template file must be provided
+        lmp_template: In combination with the params file this will be the input
+            script for the lammps simulation
+
+    Returns:
         #TODO
-        #proc = subprocess.Popen([self.lmp_exe, "-in", self.lmp_input_file])
+    """
+
+    lmp_exe = meta.Text("lmp_serial")
+    lmp_params = dvc.params("lammps.yaml")
+    lmp_template = dvc.deps("NPT.in")
+
+    def run(self):
+        # TODO
+        # proc = subprocess.Popen([self.lmp_exe, "-in", self.lmp_input_file])
         pass
 
 
