@@ -1,0 +1,8 @@
+schema: '2.0'
+stages:
+  lammpsnode:
+    cmd: zntrack run LMP_Node.lammpsnode --name=lammpsnode
+    deps:
+    - path: NPT.in
+      md5: 28ca62c16e9e563fe1a91376b20edae5
+      size: 2037

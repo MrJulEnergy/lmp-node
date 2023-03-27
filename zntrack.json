@@ -1,0 +1,5 @@
+{
+    "lammpsnode": {
+        "lmp_input_file": "NPT.in"
+    }
+}

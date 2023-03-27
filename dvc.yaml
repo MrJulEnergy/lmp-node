@@ -1,0 +1,7 @@
+stages:
+    lammpsnode:
+        cmd: zntrack run LMP_Node.lammpsnode --name=lammpsnode
+        deps:
+        - NPT.in
+        meta:
+            lmp_shell: lmp_serial
