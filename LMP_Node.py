@@ -5,7 +5,7 @@ from jinja2 import Environment, FileSystemLoader
 from zntrack import Node, dvc, meta, utils
 
 
-class lammpsnode(Node):
+class LammpsSimulator(Node):
     """Can run LAMMPS Simulations.
 
     Args:
@@ -27,36 +27,41 @@ class lammpsnode(Node):
     lmp_template = dvc.deps()
 
     lmp_directory = dvc.outs(utils.nwd / "lammps")
-    
-    def _post_init_(self):
+
+    def create_input_script(self):
         # Get parameter from yaml:
         with open(self.lmp_params, "r") as stream:
             params = yaml.safe_load(stream)
 
         # Get template
         loader = FileSystemLoader(".")
-        env = Environment(loader=loader)#, trim_blocks=True, lstrip_blocks=True)
+        env = Environment(loader=loader)  # , trim_blocks=True, lstrip_blocks=True)
         template = env.get_template(self.lmp_template)
 
         # Render Template
         self.lmp_input_script = template.render(params)
+        with open(f"{self.lmp_directory}/input.script", "w") as file:
+            file.write(self.lmp_input_script)  # write input script to output directory
 
     def run(self):
-        self.lmp_directory.mkdir(exist_ok=True) #create output directory
-        with open(f"{self.lmp_directory}/input.script", "w") as file:
-            file.write(self.lmp_input_script) #write input script to output directory
+        self.lmp_directory.mkdir(exist_ok=True)  # create output directory
+        self.create_input_script()
+        subprocess.run(
+            [self.lmp_exe, "-in", "input.script"],
+            cwd=self.lmp_directory,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
 
-        proc = subprocess.run(
-                [self.lmp_exe, "-in", "input.script"],
-                cwd=self.lmp_directory,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                )
-        #TODO Find a Way to get live output from run or Popen
-        #print(proc.stdout)
+        # TODO Find a Way to get live output from run or Popen
+        # print(proc.stdout)
 
 
 if __name__ == "__main__":
-    lmp = lammpsnode(lmp_params="npt_params.yaml", lmp_template="templates/npt.lmp")
+    lmp = LammpsSimulator(
+        lmp_params="npt_params.yaml",
+        lmp_template="templates/npt.lmp",
+    )
+
     lmp.write_graph()
