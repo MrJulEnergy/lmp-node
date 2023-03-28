@@ -1,16 +1,20 @@
-#Files:
-input_trajectory: "NaCl.xyz"
-dump_file: "NPT.lammpstraj"
-log_file: "NPT.log"
+files:
+  input:
+    input_trajectory: "NaCl.xyz"
+    lalaland: "xyz.abc"
+    trst: "asf.utz"
+  output:
+    dump_file: "NPT.lammpstraj"
+    log_file: "NPT.log"
 
-#Simulation Parameter
-temperature: 1100
-pressure: 1.0
-barostat_factor: 500
+sim_parameter:
+  temperature: 1100
+  pressure: 1.0
+  barostat_factor: 500
 
-steps: 10000 #200000
-timestep: 0.001
-dump_interval: 1000
-thermo_intervall: 1000
+  steps: 10000 #200000
+  timestep: 0.001
+  dump_interval: 1000
+  thermo_intervall: 1000
 
 
