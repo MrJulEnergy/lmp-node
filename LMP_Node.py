@@ -39,7 +39,7 @@ class LammpsSimulator(Node):
         with open(self.lmp_params, "r") as stream:
             params = yaml.safe_load(stream)
 
-        # Resolve Paths for input files
+        # Resolve paths for input files
         input_dict = {}
         for key in params["files"]["input"]:
             input_dict[key] = (

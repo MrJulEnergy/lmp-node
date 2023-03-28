@@ -1,13 +1,11 @@
 files:
-  input:
+  inputs:
     input_trajectory: "NaCl.xyz"
-    lalaland: "xyz.abc"
-    trst: "asf.utz"
-  output:
+  outputs:
     dump_file: "NPT.lammpstraj"
     log_file: "NPT.log"
 
-sim_parameter:
+sim_parameters:
   temperature: 1100
   pressure: 1.0
   barostat_factor: 500
