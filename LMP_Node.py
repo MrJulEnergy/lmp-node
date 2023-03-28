@@ -6,27 +6,32 @@ from zntrack import Node, dvc, meta, utils
 
 
 class LammpsSimulator(Node):
-    """Can run LAMMPS Simulations.
+    """Can perform LAMMPS Simulations.
 
-    Args:
-        lmp_exe: This is the name or path of the LAMMPS executable. Either path
+    Parameters
+    ----------
+        lmp_exe: str
+            This is the name or path of the LAMMPS executable. Either path
             to executable, "lmp" or "lamp_<machine>".
             See https://docs.lammps.org/Run_basics.html for more information
-        lmp_params: Path to file. To be able to change parameters with DVC and not
+        lmp_params: str
+            Path to file. To be able to change parameters with DVC and not
             have to change them manually in the input script, a params file in yaml
             format and corresponding template file must be provided.
-        lmp_template: Path to file. In combination with the params file this will
+        lmp_template: str
+            Path to file. In combination with the params file this will
             be the input script for the LAMMPS simulation
 
-    Returns:
+    Returns
+    -------
         #TODO
     """
 
-    lmp_exe = meta.Text("lmp_serial")
-    lmp_params = dvc.params()
-    lmp_template = dvc.deps()
+    lmp_exe: str = meta.Text("lmp_serial")
+    lmp_params: str = dvc.params()
+    lmp_template: str = dvc.deps()
 
-    lmp_directory = dvc.outs(utils.nwd / "lammps")
+    lmp_directory: str = dvc.outs(utils.nwd / "lammps")
 
     def create_input_script(self):
         # Get parameter from yaml:
