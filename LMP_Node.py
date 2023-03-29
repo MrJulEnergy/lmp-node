@@ -41,14 +41,14 @@ class LammpsSimulator(Node):
 
         # Resolve paths for input files
         input_dict = {}
-        for key in params["files"]["input"]:
+        for key in params["files"]["inputs"]:
             input_dict[key] = (
-                pathlib.Path(params["files"]["input"][key]).resolve().as_posix()
+                pathlib.Path(params["files"]["inputs"][key]).resolve().as_posix()
             )
-        for key in params["files"]["output"]:
-            input_dict[key] = params["files"]["output"][key]
-        for key in params["sim_parameter"]:
-            input_dict[key] = params["sim_parameter"][key]
+        for key in params["files"]["outputs"]:
+            input_dict[key] = params["files"]["outputs"][key]
+        for key in params["sim_parameters"]:
+            input_dict[key] = params["sim_parameters"][key]
 
         # Get template
         loader = FileSystemLoader(".")
