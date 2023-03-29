@@ -1,3 +1,4 @@
+import pathlib
 import subprocess
 
 import yaml
@@ -38,13 +39,24 @@ class LammpsSimulator(Node):
         with open(self.lmp_params, "r") as stream:
             params = yaml.safe_load(stream)
 
+        # Resolve paths for input files
+        input_dict = {}
+        for key in params["files"]["input"]:
+            input_dict[key] = (
+                pathlib.Path(params["files"]["input"][key]).resolve().as_posix()
+            )
+        for key in params["files"]["output"]:
+            input_dict[key] = params["files"]["output"][key]
+        for key in params["sim_parameter"]:
+            input_dict[key] = params["sim_parameter"][key]
+
         # Get template
         loader = FileSystemLoader(".")
         env = Environment(loader=loader)  # , trim_blocks=True, lstrip_blocks=True)
         template = env.get_template(self.lmp_template)
 
         # Render Template
-        self.lmp_input_script = template.render(params)
+        self.lmp_input_script = template.render(input_dict)
         with open(f"{self.lmp_directory}/input.script", "w") as file:
             file.write(self.lmp_input_script)  # write input script to output directory
 
