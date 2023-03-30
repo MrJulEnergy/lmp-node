@@ -3,7 +3,8 @@ import subprocess
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
-from zntrack import Node, dvc, meta, utils
+from zntrack import Node, dvc, meta, utils, zn
+
 
 
 class LammpsSimulator(Node):
@@ -31,6 +32,7 @@ class LammpsSimulator(Node):
     lmp_exe: str = meta.Text("lmp_serial")
     lmp_params: str = dvc.params()
     lmp_template: str = dvc.deps()
+    skiprun: str = dvc.deps("no")
 
     lmp_directory: str = dvc.outs(utils.nwd / "lammps")
 
@@ -63,8 +65,16 @@ class LammpsSimulator(Node):
     def run(self):
         self.lmp_directory.mkdir(exist_ok=True)  # create output directory
         self.create_input_script()
+
+        if self.skiprun == "yes":
+            cmd = [self.lmp_exe, "-sr", "-in", "input.script"]
+            print("Skipping simulation ...")
+        else:
+            cmd = [self.lmp_exe, "-in", "input.script"]
+            print("Simulating ...")
+
         subprocess.run(
-            [self.lmp_exe, "-in", "input.script"],
+            cmd,
             cwd=self.lmp_directory,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
