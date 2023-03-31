@@ -6,7 +6,6 @@ from jinja2 import Environment, FileSystemLoader
 from zntrack import Node, dvc, meta, utils
 
 
-
 class LammpsSimulator(Node):
     """Can perform LAMMPS Simulations.
 
@@ -74,15 +73,18 @@ class LammpsSimulator(Node):
         self.create_input_script()
         if self.skiprun:
             print("Skipping simulation ...")
-            return
+            cmd = [self.lmp_exe, "-sr" "-in", "input.script"]
+        else:
+            print("Simulating ...")
+            cmd = [self.lmp_exe, "-in", "input.script"]
+
         subprocess.run(
-            [self.lmp_exe, "-in", "input.script"],
+            cmd,
             cwd=self.lmp_directory,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
         )
-
         # TODO Find a Way to get live output from run or Popen
         # print(proc.stdout)
 
