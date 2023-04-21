@@ -22,15 +22,23 @@ class LammpsSimulator(Node):
         lmp_template: str
             Path to file. In combination with the params file this will
             be the input script for the LAMMPS simulation
+        skiprun: bool, optional
+            Whether to skip running LAMMPS or not, by default False
 
     Returns
     -------
-        #TODO
+    None
+        This function does not return anything. Instead, it creates a LAMMPS input
+        script based on the specified template and parameter files, runs the
+        LAMMPS simulation using the specified executable, and saves the simulation
+        output to the specified directory.
+
     """
 
     lmp_exe: str = meta.Text("lmp_serial")
     lmp_params: str = dvc.params()
     lmp_template: str = dvc.deps()
+    skiprun: bool = False
 
     lmp_directory: str = dvc.outs(utils.nwd / "lammps")
 
@@ -63,14 +71,20 @@ class LammpsSimulator(Node):
     def run(self):
         self.lmp_directory.mkdir(exist_ok=True)  # create output directory
         self.create_input_script()
+        if self.skiprun:
+            print("Skipping simulation ...")
+            cmd = [self.lmp_exe, "-sr" "-in", "input.script"]
+        else:
+            print("Simulating ...")
+            cmd = [self.lmp_exe, "-in", "input.script"]
+
         subprocess.run(
-            [self.lmp_exe, "-in", "input.script"],
+            cmd,
             cwd=self.lmp_directory,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
         )
-
         # TODO Find a Way to get live output from run or Popen
         # print(proc.stdout)
 
