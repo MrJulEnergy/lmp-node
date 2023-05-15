@@ -1,10 +1,3 @@
-files:
-  inputs:
-    input_trajectory: "NaCl.xyz"
-  outputs:
-    dump_file: "NPT.lammpstraj"
-    log_file: "NPT.log"
-
 sim_parameters:
   temperature: 1100
   pressure: 1.0
