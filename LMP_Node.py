@@ -4,6 +4,7 @@ import ase
 import ase.io
 import yaml
 from jinja2 import Environment, FileSystemLoader
+import zntrack
 from zntrack import Node, dvc, meta, utils, zn
 
 
@@ -36,7 +37,7 @@ class LammpsSimulator(Node):
 
     """
 	
-    lmp_directory: str = dvc.outs(utils.nwd / "lammps")
+    lmp_directory: str = dvc.outs(zntrack.nwd / "lammps")
     lmp_exe: str = meta.Text("lmp_serial")
     skiprun: bool = False
 
@@ -45,8 +46,8 @@ class LammpsSimulator(Node):
     atoms_file = dvc.deps(None) #input trajectory 
 
     #outputs
-    dump_file = dvc.outs(utils.nwd / "NPT.lammpstraj")
-    log_file = dvc.outs(utils.nwd / "NPT.log")
+    dump_file = dvc.outs(zntrack.nwd / "NPT.lammpstraj")
+    log_file = dvc.outs(zntrack.nwd / "NPT.log")
     
 
     lmp_params: str = dvc.params()
@@ -116,12 +117,19 @@ class LammpsSimulator(Node):
         )
 
 
+class AseAtomsReader(Node):
+    atoms_file = dvc.deps()
+    atoms = zn.outs()
+    def run(self):
+        self.atoms = ase.io.read(pathlib.Path(self.atoms_file).resolve().as_posix())
+
 
 if __name__ == "__main__":
-    lmp = LammpsSimulator(
-        atoms_file = "NaCl.xyz",
-        lmp_params="npt_params.yaml",
-        lmp_template="templates/npt.lmp",
-    )
-
-    lmp.write_graph()
+    with zntrack.Project() as project:
+        at = AseAtomsReader(atoms_file="NaCl.xyz")   
+        lmp = LammpsSimulator(
+            atoms = at.atoms,
+            lmp_params="npt_params.yaml",
+            lmp_template="templates/npt.lmp",
+        )
+    project.run()
