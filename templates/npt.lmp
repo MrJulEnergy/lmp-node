@@ -26,8 +26,10 @@ read_dump       {{ input_trajectory }} 0 x y z box no add yes format xyz
     set atom {{ loop.index }} type {{ number }}
 {% endfor %}
 
-mass            1  22.989
-mass            2  35.453
+{% for mass in atomic_masses -%}
+    mass {{ loop.index }} {{ mass }}
+{% endfor %}
+
 set     atom 1*500 charge 1
 set     atom 501*1000 charge -1
 group           Na type 1
