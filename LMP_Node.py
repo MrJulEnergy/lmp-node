@@ -71,6 +71,11 @@ class LammpsSimulator(Node):
             ase.io.write(self.lmp_directory / "atoms.xyz", self.atoms)
             self.atoms_file = pathlib.Path(self.lmp_directory / "atoms.xyz").resolve().as_posix()
 
+    def fill_atoms_with_life(self):
+        # give atoms for example masses and similar things in the LAMMPS input scipt
+        # has to be executed after get_atoms has been executed
+        data = ase.io.read(self.atoms_file)
+        self.atomic_numbers = data.get_atomic_numbers()
 
     def create_input_script(self):
         # Get parameter from yaml:
@@ -86,6 +91,9 @@ class LammpsSimulator(Node):
         for key in params["sim_parameters"]:
             input_dict[key] = params["sim_parameters"][key]
 
+        # here would be a good place the execute fill_atoms_with_life()
+        input_dict["atomic_numbers"] = self.atomic_numbers
+        print(input_dict)
         # Get template
         loader = FileSystemLoader(".")
         env = Environment(loader=loader)  # , trim_blocks=True, lstrip_blocks=True)
@@ -99,6 +107,7 @@ class LammpsSimulator(Node):
     def run(self):
         self.lmp_directory.mkdir(exist_ok=True)  # create output directory
         self.get_atoms()
+        self.fill_atoms_with_life()
         self.create_input_script()
 
         if self.skiprun:

@@ -20,8 +20,12 @@ create_box      2 myRegion
 # We start from a xyz file
 
 read_dump       {{ input_trajectory }} 0 x y z box no add yes format xyz
-set             atom 1*500 type 1
-set             atom 501*1000 type 2
+
+
+{% for number in atomic_numbers -%}
+    set atom {{ loop.index }} type {{ number }}
+{% endfor %}
+
 mass            1  22.989
 mass            2  35.453
 set     atom 1*500 charge 1
