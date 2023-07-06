@@ -93,7 +93,6 @@ class LammpsSimulator(Node):
 
         # here would be a good place the execute fill_atoms_with_life()
         input_dict["atomic_numbers"] = self.atomic_numbers
-        print(input_dict)
         # Get template
         loader = FileSystemLoader(".")
         env = Environment(loader=loader)  # , trim_blocks=True, lstrip_blocks=True)
@@ -108,8 +107,9 @@ class LammpsSimulator(Node):
         self.lmp_directory.mkdir(exist_ok=True)  # create output directory
         self.get_atoms()
         self.fill_atoms_with_life()
+        print("bevore input script")
         self.create_input_script()
-
+        print("after input script")
         if self.skiprun:
             print("Skipping simulation ...")
             cmd = [self.lmp_exe, "-sr" "-in", "input.script"]
@@ -141,4 +141,4 @@ if __name__ == "__main__":
             lmp_params="npt_params.yaml",
             lmp_template="templates/npt.lmp",
         )
-    project.run()
+    project.run(repro=False)
