@@ -74,8 +74,24 @@ class LammpsSimulator(Node):
     def fill_atoms_with_life(self):
         # give atoms for example masses and similar things in the LAMMPS input scipt
         # has to be executed after get_atoms has been executed
+        
+        #Atomic Number
         data = ase.io.read(self.atoms_file)
         self.atomic_numbers = data.get_atomic_numbers()
+
+        #Atom Type (LAMMPS Specific)
+        i = 1
+        atom_map = {}
+        for num in self.atomic_numbers:
+            if num not in atom_map:
+                atom_map[num] = i
+                i += 1
+
+        self.atomic_type = [atom_map[num] for num in self.atomic_numbers]
+
+        # Atom Masses
+        #TODO
+
 
     def create_input_script(self):
         # Get parameter from yaml:
@@ -92,7 +108,10 @@ class LammpsSimulator(Node):
             input_dict[key] = params["sim_parameters"][key]
 
         # here would be a good place the execute fill_atoms_with_life()
-        input_dict["atomic_numbers"] = self.atomic_numbers
+        #input_dict["atomic_numbers"] = self.atomic_numbers
+        input_dict["atomic_type"] = self.atomic_type 
+        #imput_dict["atomic_masses"] = self.atomic_masses # TODO vielleicht bekommt man das aus ase
+        
         # Get template
         loader = FileSystemLoader(".")
         env = Environment(loader=loader)  # , trim_blocks=True, lstrip_blocks=True)

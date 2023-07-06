@@ -3,7 +3,17 @@ from ase.io import lammpsdata
 import pathlib
 
 atoms = ase.io.read(pathlib.Path("NaCl.xyz").resolve().as_posix())
-print(len(atoms.get_atomic_numbers()))
+atomic_numbers = atoms.get_atomic_numbers()
+
+i = 1
+atom_map = {}
+for num in atomic_numbers:
+    if num not in atom_map:
+        atom_map[num] = i
+        i += 1
+
+atom_type = [atom_map[num] for num in atomic_numbers]
+print(atom_type)
 
 #atoms.set_initial_charges([1]*500 + [-1]*500)
 #print(atoms)
