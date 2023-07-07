@@ -20,14 +20,22 @@ create_box      2 myRegion
 # We start from a xyz file
 
 read_dump       {{ input_trajectory }} 0 x y z box no add yes format xyz
-set             atom 1*500 type 1
-set             atom 501*1000 type 2
-mass            1  22.989
-mass            2  35.453
+
+
+{% for number in atomic_type -%}
+    set atom {{ loop.index }} type {{ number }}
+{% endfor %}
+
+{% for mass in atomic_masses -%}
+    mass {{ loop.index }} {{ mass }}
+{% endfor %}
+
 set     atom 1*500 charge 1
 set     atom 501*1000 charge -1
-group           Na type 1
-group           Cl type 2
+
+{% for symbol in atomic_symbols -%}
+    group {{ symbol }} type {{ loop.index }} 
+{% endfor %}
 
 velocity       all create {{ temperature }} 132465
 
