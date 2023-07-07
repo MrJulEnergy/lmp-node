@@ -1,6 +1,7 @@
+import pathlib
+
 import ase.io
 from ase.io import lammpsdata
-import pathlib
 
 atoms = ase.io.read(pathlib.Path("NaCl.xyz").resolve().as_posix())
 atomic_masses = atoms.get_masses()
@@ -19,8 +20,8 @@ print([tup[1] for tup in list(atom_map.values())])
 
 print([tup[2] for tup in list(atom_map.values())])
 
-#atoms.set_initial_charges([1]*500 + [-1]*500)
-#print(atoms)
-#print(atoms[499])
-#print(atoms[500])
-#ase.io.lammpsdata.write_lammps_data("output_file2", atoms, atom_style="charge")
+# atoms.set_initial_charges([1]*500 + [-1]*500)
+# print(atoms)
+# print(atoms[499])
+# print(atoms[500])
+# ase.io.lammpsdata.write_lammps_data("output_file2", atoms, atom_style="charge")

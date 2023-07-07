@@ -1,11 +1,12 @@
 import pathlib
 import subprocess
+
 import ase
 import ase.io
 import yaml
-from jinja2 import Environment, FileSystemLoader
 import zntrack
-from zntrack import Node, dvc, meta, utils, zn
+from jinja2 import Environment, FileSystemLoader
+from zntrack import Node, dvc, meta, zn
 
 
 class LammpsSimulator(Node):
@@ -36,47 +37,55 @@ class LammpsSimulator(Node):
         output to the specified directory.
 
     """
-	
+
     """A few remarks for future programmers:
-    -If there is the error, that NPT.lammpstraj doesnt exist: that means there is an error in the inputscript. look at log.lammps in the nwd to see whats wrong
+    -If there is the error, that NPT.lammpstraj doesnt exist: 
+        that means there is an error in the inputscript. 
+        look at log.lammps in the nwd to see whats wrong
+    - dont forget to "dvc init"...
     """
     lmp_directory: str = dvc.outs(zntrack.nwd / "lammps")
     lmp_exe: str = meta.Text("lmp_serial")
     skiprun: bool = False
 
-    #inputs
+    # inputs
     atoms: ase.Atoms = zn.deps(None)
-    atoms_file = dvc.deps(None) #input trajectory 
+    atoms_file = dvc.deps(None)  # input trajectory
 
-    #outputs
+    # outputs
     dump_file = dvc.outs(zntrack.nwd / "NPT.lammpstraj")
     log_file = dvc.outs(zntrack.nwd / "NPT.log")
-    
 
     lmp_params: str = dvc.params()
     lmp_template: str = dvc.deps()
-    
+
     def _post_init_(self):
-   		# Check if atoms were provided:
+        # Check if atoms were provided:
         if self.atoms is None and self.atoms_file is None:
             raise TypeError("Both atoms and atoms_file mustn't be None")
         if self.atoms is not None and self.atoms_file is not None:
             raise TypeError(
                 "Atoms and atoms_file are mutually exclusive. Please only provide one"
-            ) 
+            )
 
     def get_atoms(self):
-        #look where to get the input_trajectory (either ase.Atoms or file)
+        # look where to get the input_trajectory (either ase.Atoms or file)
         if self.atoms is None:
             self.atoms_file = pathlib.Path(self.atoms_file).resolve().as_posix()
         if self.atoms_file is None:
-            #if not atoms_file is provided, input_trajectory has to come from ase.Atoms, which have to be written to a file.
+            # if not atoms_file is provided,
+            # input_trajectory has to come from ase.Atoms,
+            # which have to be written to a file.
             ase.io.write(self.lmp_directory / "atoms.xyz", self.atoms)
-            self.atoms_file = pathlib.Path(self.lmp_directory / "atoms.xyz").resolve().as_posix()
+            self.atoms_file = (
+                pathlib.Path(self.lmp_directory / "atoms.xyz").resolve().as_posix()
+            )
 
     def fill_atoms_with_life(self):
-        # Give LAMMPS more information about the Atoms provided. (e.g. Mass or Type (LAMMPS specific)).
-        # This Function has to be executed after get_atoms has been executed, otherwise there might not be a xyz file to read.
+        # Give LAMMPS more information about the Atoms provided.
+        # (e.g. Mass or Type (LAMMPS specific)).
+        # This Function has to be executed after get_atoms has been executed,
+        # otherwise there might not be a xyz file to read.
         # Charges have to be set by Hand in the LAMMPS-inputscript-Template.
         data = ase.io.read(self.atoms_file)
 
@@ -84,14 +93,18 @@ class LammpsSimulator(Node):
         self.atomic_numbers = data.get_atomic_numbers()
         # Atomic Mass
         self.atomic_masses = data.get_masses()
-        #Atom Symbol
+        # Atom Symbol
         self.atomic_symbols = data.get_chemical_symbols()
 
         i = 1
         atom_map = {}
         for k in range(len(self.atomic_numbers)):
             if self.atomic_numbers[k] not in atom_map:
-                atom_map[self.atomic_numbers[k]] = (i, self.atomic_masses[k], self.atomic_symbols[k])
+                atom_map[self.atomic_numbers[k]] = (
+                    i,
+                    self.atomic_masses[k],
+                    self.atomic_symbols[k],
+                )
                 i += 1
         self.atomic_type = [atom_map[num][0] for num in self.atomic_numbers]
         self.atomic_masses = [tup[1] for tup in list(atom_map.values())]
@@ -111,9 +124,10 @@ class LammpsSimulator(Node):
         for key in params["sim_parameters"]:
             input_dict[key] = params["sim_parameters"][key]
 
-        # Fill input dict with information about the atoms (all infos are gathered from the xyz file except charges)
-        input_dict["atomic_type"] = self.atomic_type 
-        input_dict["atomic_masses"] = self.atomic_masses 
+        # Fill input dict with information about the atoms
+        # (all infos are gathered from the xyz file except charges)
+        input_dict["atomic_type"] = self.atomic_type
+        input_dict["atomic_masses"] = self.atomic_masses
         input_dict["atomic_symbols"] = self.atomic_symbols
 
         # Get template
@@ -137,7 +151,7 @@ class LammpsSimulator(Node):
         else:
             print("Simulating ...")
             cmd = [self.lmp_exe, "-in", "input.script"]
-        
+
         subprocess.run(
             cmd,
             cwd=self.lmp_directory,
@@ -150,15 +164,16 @@ class LammpsSimulator(Node):
 class AseAtomsReader(Node):
     atoms_file = dvc.deps()
     atoms = zn.outs()
+
     def run(self):
         self.atoms = ase.io.read(pathlib.Path(self.atoms_file).resolve().as_posix())
 
 
 if __name__ == "__main__":
     with zntrack.Project() as project:
-        at = AseAtomsReader(atoms_file="NaCl.xyz")   
+        at = AseAtomsReader(atoms_file="NaCl.xyz")
         lmp = LammpsSimulator(
-            atoms = at.atoms,
+            atoms=at.atoms,
             lmp_params="npt_params.yaml",
             lmp_template="templates/npt.lmp",
         )
