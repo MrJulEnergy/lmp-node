@@ -37,6 +37,9 @@ class LammpsSimulator(Node):
 
     """
 	
+    """A few remarks for future programmers:
+    -If there is the error, that NPT.lammpstraj doesnt exist: that means there is an error in the inputscript. look at log.lammps in the nwd to see whats wrong
+    """
     lmp_directory: str = dvc.outs(zntrack.nwd / "lammps")
     lmp_exe: str = meta.Text("lmp_serial")
     skiprun: bool = False
@@ -72,22 +75,27 @@ class LammpsSimulator(Node):
             self.atoms_file = pathlib.Path(self.lmp_directory / "atoms.xyz").resolve().as_posix()
 
     def fill_atoms_with_life(self):
-        # give atoms for example masses and similar things in the LAMMPS input scipt
-        # has to be executed after get_atoms has been executed
+        # Give LAMMPS more information about the Atoms provided. (e.g. Mass or Type (LAMMPS specific)).
+        # This Function has to be executed after get_atoms has been executed, otherwise there might not be a xyz file to read.
+        # Charges have to be set by Hand in the LAMMPS-inputscript-Template.
         data = ase.io.read(self.atoms_file)
+
         # Atomic Number
         self.atomic_numbers = data.get_atomic_numbers()
         # Atomic Mass
         self.atomic_masses = data.get_masses()
-        #Atom Type (LAMMPS Specific)
+        #Atom Symbol
+        self.atomic_symbols = data.get_chemical_symbols()
+
         i = 1
         atom_map = {}
         for k in range(len(self.atomic_numbers)):
             if self.atomic_numbers[k] not in atom_map:
-                atom_map[self.atomic_numbers[k]] = (i, self.atomic_masses[k])
+                atom_map[self.atomic_numbers[k]] = (i, self.atomic_masses[k], self.atomic_symbols[k])
                 i += 1
         self.atomic_type = [atom_map[num][0] for num in self.atomic_numbers]
         self.atomic_masses = [tup[1] for tup in list(atom_map.values())]
+        self.atomic_symbols = [tup[2] for tup in list(atom_map.values())]
 
     def create_input_script(self):
         # Get parameter from yaml:
@@ -103,11 +111,11 @@ class LammpsSimulator(Node):
         for key in params["sim_parameters"]:
             input_dict[key] = params["sim_parameters"][key]
 
-        # here would be a good place the execute fill_atoms_with_life()
-        #input_dict["atomic_numbers"] = self.atomic_numbers
+        # Fill input dict with information about the atoms (all infos are gathered from the xyz file except charges)
         input_dict["atomic_type"] = self.atomic_type 
-        input_dict["atomic_masses"] = self.atomic_masses # TODO vielleicht bekommt man das aus ase
-        
+        input_dict["atomic_masses"] = self.atomic_masses 
+        input_dict["atomic_symbols"] = self.atomic_symbols
+
         # Get template
         loader = FileSystemLoader(".")
         env = Environment(loader=loader)  # , trim_blocks=True, lstrip_blocks=True)
@@ -122,9 +130,7 @@ class LammpsSimulator(Node):
         self.lmp_directory.mkdir(exist_ok=True)  # create output directory
         self.get_atoms()
         self.fill_atoms_with_life()
-        print("bevore input script")
         self.create_input_script()
-        print("after input script")
         if self.skiprun:
             print("Skipping simulation ...")
             cmd = [self.lmp_exe, "-sr" "-in", "input.script"]

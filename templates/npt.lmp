@@ -32,8 +32,10 @@ read_dump       {{ input_trajectory }} 0 x y z box no add yes format xyz
 
 set     atom 1*500 charge 1
 set     atom 501*1000 charge -1
-group           Na type 1
-group           Cl type 2
+
+{% for symbol in atomic_symbols -%}
+    group {{ symbol }} type {{ loop.index }} 
+{% endfor %}
 
 velocity       all create {{ temperature }} 132465
 
